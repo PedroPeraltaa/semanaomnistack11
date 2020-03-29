@@ -1,7 +1,9 @@
 import React from 'react';
-import { View, Image, Text, TouchableOpacity} from 'react-native';
+import { View, Image, Text, TouchableOpacity, Linking} from 'react-native';
 import { Feather} from '@expo/vector-icons'
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation,useRoute } from '@react-navigation/native';
+import * as MailComposer from 'expo-mail-composer';
+
 
 import styles from './styles';
 import logoImg from '../../assets/logo.png';
@@ -9,9 +11,25 @@ import logoImg from '../../assets/logo.png';
 
 export default function Detail(){
     const Navigation = useNavigation(); 
+    const Route = useRoute();
+
+    const incident = Route.params.incident;
+    const message = `Olá ${incident.name}, estou entrando em contacto pois gostaria de ajudar no caso "${incident.title} no valor de ${Intl.NumberFormat('pt-PT', {style: 'currency', currency: 'EUR'}).format(incident.value)}`;
 
     function navigateBack(){
         Navigation.goBack()
+    }
+
+    function sendMail(){
+        MailComposer.composeAsync({
+            subject: `Heroi do Caso: ${incident.title}`,
+            recipients: [incident.email],
+            body: message,
+        })
+    }
+
+    function sendWhatsApp(){
+        Linking.openURL(`whatsapp://send?phone=${incident.whatsapp}&text=${message}`);
     }
 
     return (
@@ -27,13 +45,13 @@ export default function Detail(){
             <View style={styles.incident}>
 
             <Text style={[styles.incidentProprerty, {marginTop: 0}]}>ONG:</Text>
-            <Text style={styles.incidentValue}>APAD</Text>
+            <Text style={styles.incidentValue}>{incident.name} de {incident.city}/{incident.uf}</Text>
             
             <Text style={styles.incidentProprerty}>CASO:</Text>
-            <Text style={styles.incidentValue}>Cadelinha atropelada</Text>
+            <Text style={styles.incidentValue}>{incident.title}</Text>
         
             <Text style={styles.incidentProprerty}>VALOR:</Text>
-            <Text style={styles.incidentValue}>120</Text>
+            <Text style={styles.incidentValue}>{Intl.NumberFormat('pt-PT', {style: 'currency', currency: 'EUR'}).format(incident.value)}</Text>
 
             </View>
 
@@ -44,11 +62,11 @@ export default function Detail(){
                 <Text style={styles.heroDescription}>Entre em contacto: </Text>
 
                 <View style={styles.actions}>
-                    <TouchableOpacity style={styles.action} onPress={()=>{}}>
+                    <TouchableOpacity style={styles.action} onPress={sendWhatsApp}>
                         <Text style={styles.actionText}>WhatsApp</Text>
                     </TouchableOpacity>
 
-                    <TouchableOpacity style={styles.action} onPress={()=>{}}>
+                    <TouchableOpacity style={styles.action} onPress={sendMail}>
                         <Text style={styles.actionText}>E-mail</Text>
                     </TouchableOpacity>
 
